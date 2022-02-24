@@ -1,5 +1,27 @@
 # rollup-plugin-css-chunks changelog
 
+## 2.0.3 (03/03/2021)
+
+* fix: invalid RegEx ([#21](https://github.com/domingues/rollup-plugin-css-chunks/pull/21));
+
+## 2.0.2 (10/12/2020)
+
+* fix: peerDependencies specification (#17);
+
+## 2.0.1 (07/12/2020)
+
+* fix: url-join missing from dependencies (#13);
+
+## 2.0.0 (07/12/2020)
+
+* feat: load source map file of `sourceMappingURL`;
+* feat: return CSS chunk public URL;
+* fix: no-treeshake causing inclusion of dead CSS and "phantom" js modules (#7);
+
+## 1.2.9 (30/11/2020)
+
+* build: add type definitions.
+
 ## 1.2.8 (21/09/2020)
 
 * Fix build.
