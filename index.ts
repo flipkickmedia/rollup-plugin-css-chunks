@@ -6,19 +6,14 @@ import {
     OutputChunk,
     PluginContext,
     PluginImpl,
+    RenderedChunk,
     SourceMap,
     SourceMapInput
 } from 'rollup';
-import {createFilter} from 'rollup-pluginutils';
-import {encode, decode} from 'sourcemap-codec';
-import {readFileSync} from "fs";
+import { createFilter } from 'rollup-pluginutils';
+import { encode, decode } from 'sourcemap-codec';
+import { readFileSync } from "fs";
 import urljoin from 'url-join';
-
-interface SourceMap {
-    mappings: string,
-    sources: string[],
-    sourcesContent: string
-}
 
 interface PluginOptions {
     injectImports: boolean;
@@ -37,7 +32,6 @@ interface InputPluginOptions {
     chunkFileNames?: string;
     entryFileNames?: string;
     publicPath?: string;
-    sourcemap?: boolean;
     emitFiles?: boolean;
 }
 
@@ -109,7 +103,7 @@ const find_css = (chunk: RenderedChunk, bundle: OutputBundle) => {
     return Array.from(css_files);
 };
 
-const cssChunks: PluginImpl<InputPluginOptions> = function(options = {}) {
+const cssChunks: PluginImpl<InputPluginOptions> = function (options = {}) {
     const filter = createFilter(/\.css$/i, []);
 
     const defaultPluginOptions: PluginOptions = {
@@ -172,36 +166,8 @@ const cssChunks: PluginImpl<InputPluginOptions> = function(options = {}) {
 
         transform(code: string, id: string) {
             if (!filter(id)) return null;
-
-            let code = readFileSync(id, 'utf8');
-            let map: SourceMapInput = null;
-
-            let m = code.match(/\/\*#\W*sourceMappingURL=data:application\/json;charset=utf-8;base64,([a-zA-Z0-9+/]+)\W*\*\//);
-            if (m !== null) {
-                code = code.replace(m[0], '').trim();
-                try {
-                    map = JSON.parse(Buffer.from(m[1], 'base64').toString('utf-8').trim());
-                } catch (err) {
-                    console.warn(`Could not load css map file of ${id}.\n  ${err}`);
-                }
-            }
-            m = code.match(/\/\*#\W*sourceMappingURL=([^\\/]+)\W*\*\//);
-            if (m !== null) {
-                code = code.replace(m[0], '').trim();
-                try {
-                    map = readFileSync(path.resolve(id, '..', m[1].trim()), 'utf8');
-                } catch (err) {
-                    console.warn(`Could not load css map file of ${id}.\n  ${err}`);
-                }
-            }
-
-            return {code, map}
-        },
-
-        transform(code: string, id: string) {
-            if (!filter(id)) return null;
-            css_data[id] = {code, map: this.getCombinedSourcemap()};
-            return {code: `export default import.meta.CSS_URL;`, map: null, meta: {transformedByCSSChunks: true}};
+            css_data[id] = { code, map: this.getCombinedSourcemap() };
+            return { code: `export default import.meta.CSS_URL;`, map: null, meta: { transformedByCSSChunks: true } };
         },
 
         resolveImportMeta(property, options) {
@@ -275,7 +241,7 @@ const cssChunks: PluginImpl<InputPluginOptions> = function(options = {}) {
                 const css_file_name = makeFileName(chunk.name, hash(code),
                     chunk.isEntry ? pluginOptions.entryFileNames : pluginOptions.chunkFileNames);
 
-                const css_file_url = urljoin(pluginOptions.publicPath, css_file_name);
+                const css_file_url = urljoin(pluginOptions.publicPath ?? '', css_file_name);
                 chunk.code = chunk.code.replace(new RegExp(`CSS_FILE_${chunk.fileName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'g'), css_file_url);
 
                 if (emitFiles) {
