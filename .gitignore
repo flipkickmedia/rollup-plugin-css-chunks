@@ -11,3 +11,5 @@ index.d.ts
 
 # IntelliJ
 .idea
+/pnpm-lock.yaml
+/index.js.map
